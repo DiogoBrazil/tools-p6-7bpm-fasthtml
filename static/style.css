@@ -1,0 +1,225 @@
+/* static/style.css */
+body {
+    font-family: sans-serif;
+    margin: 0;
+    background-color: #f0f2f6; /* Fundo cinza claro */
+    color: #333;
+}
+
+.container {
+    max-width: 1000px;
+    margin: 1rem auto;
+    padding: 1rem 1.5rem;
+}
+
+.wide-container {
+    max-width: 100%;
+    margin: 1rem auto;
+    padding: 1rem 1.5rem;
+}
+
+
+header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+header h1 {
+    font-size: 2.1rem;
+    margin-bottom: 0.6rem;
+    color: #333;
+    font-weight: 600;
+}
+
+header p {
+    font-size: 1.0rem;
+    color: #555;
+    line-height: 1.6;
+}
+
+/* Layout de Cards (Exemplo Flexbox) */
+.card-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem; /* Espaço entre cards */
+    justify-content: center;
+}
+
+.tool-card {
+    background-color: #ffffff;
+    border-radius: 8px;
+    padding: 1.5rem; /* Aumentar padding interno */
+    flex: 1 1 300px; /* Flex-grow, flex-shrink, base width */
+    max-width: 400px; /* Largura máxima do card */
+    min-height: 280px; /* Altura mínima similar */
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    text-align: center;
+    border: 1px solid #cccccc;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.05);
+    transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+.tool-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 6px 14px rgba(0,0,0,0.08);
+    border-color: #bbbbbb;
+}
+
+.tool-card .tool-icon {
+    font-size: 2.8rem; /* Icone maior */
+    margin-bottom: 0.8rem;
+    display: block;
+}
+
+.tool-card h2 {
+    font-size: 1.3rem; /* Titulo maior */
+    margin-top: 0;
+    margin-bottom: 0.8rem;
+    color: #2c3e50;
+    font-weight: 600;
+}
+
+.tool-card p {
+    color: #666;
+    line-height: 1.5; /* Melhor legibilidade */
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+}
+
+.tool-card ul {
+    padding-left: 1.5rem; /* Mais indentação */
+    margin: 0 auto 1rem auto; /* Centralizar lista */
+    text-align: left;
+    color: #555;
+    font-size: 0.85rem;
+    max-width: 80%; /* Limitar largura da lista */
+}
+
+.tool-card li {
+    margin-bottom: 0.4rem; /* Mais espaço entre itens */
+}
+
+.tool-card a.button-link { /* Estilo do Link como Botão */
+    display: block; /* Ocupar largura */
+    width: calc(100% - 2rem); /* Ajustar largura com padding */
+    margin: 1rem auto 0 auto; /* Margem superior e centralizar */
+    padding: 0.7rem 1rem;
+    font-size: 0.95rem;
+    font-weight: bold;
+    border-radius: 6px;
+    text-decoration: none;
+    transition: background-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+    cursor: pointer;
+    /* Cor Azul Padrão */
+    background: linear-gradient(135deg, #2196F3, #42A5F5);
+    color: white;
+    border: none;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.07);
+}
+
+.tool-card a.button-link:hover {
+    background: linear-gradient(135deg, #1976D2, #2196F3);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+/* Estilos para Formulários (Exemplo) */
+form {
+    margin-top: 1.5rem;
+    background-color: #fff;
+    padding: 1.5rem;
+    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+}
+
+label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: bold;
+    color: #555;
+}
+
+input[type="text"],
+input[type="file"],
+textarea,
+select {
+    width: 100%;
+    padding: 0.7rem;
+    margin-bottom: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box; /* Para padding não aumentar tamanho total */
+    font-size: 1rem;
+}
+
+textarea {
+    min-height: 150px;
+    resize: vertical;
+}
+
+button[type="submit"] {
+    background: linear-gradient(135deg, #28a745, #5cb85c);
+    color: white;
+    padding: 0.8rem 1.5rem;
+    border: none;
+    border-radius: 5px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+button[type="submit"]:hover {
+     background: linear-gradient(135deg, #218838, #4cae4c);
+}
+
+/* Resultados */
+#result-area {
+    margin-top: 1.5rem;
+    padding: 1rem;
+    border-radius: 5px;
+    min-height: 50px; /* Espaço mesmo vazio */
+}
+.success-message {
+    background-color: #d4edda;
+    border: 1px solid #c3e6cb;
+    color: #155724;
+    padding: 1rem;
+    border-radius: 5px;
+}
+.error-message {
+    background-color: #f8d7da;
+    border: 1px solid #f5c6cb;
+    color: #721c24;
+    padding: 1rem;
+    border-radius: 5px;
+}
+
+
+footer {
+    margin-top: 3rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid #e0e0e6;
+    text-align: center;
+    font-size: 0.85rem;
+    color: #777;
+}
+
+/* Botão Voltar (Exemplo) */
+.back-button {
+    display: inline-block;
+    margin-bottom: 1.5rem;
+    padding: 0.5rem 1rem;
+    background-color: #f0f2f6;
+    color: #333;
+    border: 1px solid #d1d1d1;
+    border-radius: 4px;
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: background-color 0.2s ease;
+}
+.back-button:hover {
+    background-color: #e0e2e6;
+}

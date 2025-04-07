@@ -1,0 +1,23 @@
+services:
+  # Serviço da aplicação FastHTML
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: fasthtml-ferramentas-7bpm
+    restart: unless-stopped # Reinicia se parar inesperadamente
+    ports:
+      # Mapeia a porta 8000 do host para a porta 8000 do container (onde Uvicorn roda)
+      - "8000:8000"
+    volumes:
+      # Mapeia o diretório atual (host) para /app (container)
+      # Útil para desenvolvimento, pois alterações no código host refletem no container
+      # (se Uvicorn estiver com --reload)
+      # Para produção "pura", você pode remover este volume e usar apenas o código copiado no build.
+      - ./:/app
+    env_file:
+      # Carrega variáveis de ambiente do arquivo .env
+      - .env
+    environment:
+      # Variáveis de ambiente adicionais, se necessário
+      - PYTHONUNBUFFERED=1 # Garante que logs Python apareçam imediatamente

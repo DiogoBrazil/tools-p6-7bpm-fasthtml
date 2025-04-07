@@ -1,0 +1,4 @@
+.venv
+.env
+.sesskey
+__pycache__/
