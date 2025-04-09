@@ -249,30 +249,133 @@ def home():
     )
 
 # --- Ferramenta: Corretor de Texto ---
+
 @app.route("/text-corrector", methods=["GET"])
 def text_corrector_form():
     global text_corrector
+    
+    # Estilo para o loader
+    loader_style = Style("""
+        #text-loading {
+            display: none;
+            margin-top: 1rem;
+            padding: 1rem;
+            background-color: #e9f5ff;
+            border-radius: 5px;
+            text-align: center;
+            border: 1px solid #b8daff;
+        }
+        
+        .loader-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(0, 123, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #007bff;
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 10px;
+            vertical-align: middle;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .text-area-label {
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+        
+        textarea {
+            width: 100%;
+            min-height: 200px;
+            padding: 0.75rem;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 1rem;
+            resize: vertical;
+        }
+    """)
+    
+    # JavaScript para gerenciar o loader
+    loader_script = Script("""
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('text-form');
+        const loadingIndicator = document.getElementById('text-loading');
+        const resultArea = document.getElementById('result-area');
+        
+        if (form) {
+            form.addEventListener('submit', function() {
+                if (loadingIndicator) {
+                    loadingIndicator.style.display = 'block';
+                }
+                if (resultArea) {
+                    resultArea.innerHTML = '';
+                }
+            });
+        }
+        
+        // Eventos HTMX para mostrar/esconder o loader
+        document.body.addEventListener('htmx:beforeRequest', function(event) {
+            if (event.detail.target && event.detail.target.id === 'result-area') {
+                if (loadingIndicator) {
+                    loadingIndicator.style.display = 'block';
+                }
+            }
+        });
+        
+        document.body.addEventListener('htmx:afterRequest', function(event) {
+            if (event.detail.target && event.detail.target.id === 'result-area') {
+                if (loadingIndicator) {
+                    loadingIndicator.style.display = 'none';
+                }
+            }
+        });
+    });
+    """)
+    
     api_warning = Div()
     if not text_corrector or not text_corrector.is_configured():
-        api_warning = Div("⚠️ API de correção não configurada. Funcionalidade limitada.", cls="error-message", style="margin-bottom: 1rem;")
+        api_warning = Div("⚠️ API de correção não configurada. Funcionalidade limitada.", 
+                         cls="error-message", 
+                         style="margin-bottom: 1rem;")
 
     form_content = Form(
-        Label("📄 Cole o texto a ser corrigido:", fr="text_input"),
+        P("📄 Cole o texto a ser corrigido:", cls="text-area-label"),
         Textarea(id="text_input", name="text_input", rows=10, required=True),
         Button("Corrigir Texto", type="submit"),
-        Div(id="result-area", cls_="result-area"),
-        hx_post="/text-corrector", hx_target="#result-area", hx_swap="innerHTML", hx_indicator="#loading-indicator"
+        Div(id="result-area", cls="result-area"),
+        hx_post="/text-corrector", 
+        hx_target="#result-area", 
+        hx_swap="innerHTML",
+        id="text-form"
     )
-    loading_indicator = Div(I(cls="fas fa-spinner fa-spin"), " Corrigindo...", id="loading-indicator", cls_="htmx-indicator", style="margin-top:1rem; display: none;")
-
+    
     return page_layout(
         "Corretor de Texto - 7ºBPM/P-6",
         Main(
-            A("← Voltar", href="/", cls="back-button"), H1("📝 Corretor de Texto"),
-            P("Utilize IA para corrigir gramática e ortografia."), api_warning,
-            form_content, loading_indicator, cls="container"
+            A("← Voltar", href="/", cls="back-button",style="background-color: #2196F3 !important; color: white !important; border: none !important;"), 
+            H1("📝 Corretor de Texto"),
+            P("Utilize inteligência artificial para corrigir gramática e ortografia em português."), 
+            api_warning,
+            loader_style,
+            loader_script,
+            form_content, 
+            # Loader melhorado
+            Div(
+                Div(cls="loader-spinner"), 
+                "Corrigindo o texto... Por favor, aguarde.",
+                id="text-loading"
+            ),
+            cls="container"
         )
     )
+
+
+
+
 
 @app.route("/text-corrector", methods=["POST"])
 async def text_corrector_process(text_input: Annotated[str, Form()] = ""):
@@ -373,7 +476,7 @@ def pdf_tools_page():
     return page_layout(
         "Ferramentas PDF",
         Main(
-            A("← Voltar", href="/", cls="back-button"), 
+            A("← Voltar", href="/", cls="back-button", style="background-color: #2196F3 !important; color: white !important; border: none !important;"), 
             H1("📄 Ferramentas PDF"),
             P("Selecione a operação desejada:"),
             
@@ -949,12 +1052,104 @@ async def download_file(filename: str):
 
 
 # --- Conversor Vídeo -> MP3 ---
+
 @app.route("/video-converter", methods=["GET"])
 def video_converter_page():
-    form = Form(Label("Carregar Vídeo:", fr="vf"), Input(type="file", id="vf", name="video_file", accept="video/*", required=True),
-        Button("Converter para MP3", type="submit"), hx_post="/video-converter/process", hx_target="#v-result", hx_encoding="multipart/form-data", hx_indicator="#v-load")
-    return page_layout("Conversor Vídeo->MP3", Main(A("← Voltar", href="/", cls="back-button"), H1("🎵 Conversor Vídeo para MP3"), P("Selecione vídeo."), form,
-        Div(id="v-result", cls_="result-area"), P(id="v-load", cls_="htmx-indicator", style="display:none;", content="Convertendo..."), cls="container"))
+    # Estilo para o loader
+    loader_style = Style("""
+        #video-loading {
+            display: none;
+            margin-top: 1rem;
+            padding: 1rem;
+            background-color: #e9f5ff;
+            border-radius: 5px;
+            text-align: center;
+            border: 1px solid #b8daff;
+        }
+        
+        .loader-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(0, 123, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #007bff;
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 10px;
+            vertical-align: middle;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    """)
+    
+    # JavaScript para gerenciar o loader
+    loader_script = Script("""
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('video-form');
+        const loadingIndicator = document.getElementById('video-loading');
+        const resultArea = document.getElementById('v-result');
+        
+        if (form) {
+            form.addEventListener('submit', function() {
+                if (loadingIndicator) {
+                    loadingIndicator.style.display = 'block';
+                }
+                if (resultArea) {
+                    resultArea.innerHTML = '';
+                }
+            });
+        }
+        
+        // Eventos HTMX para mostrar/esconder o loader (backup)
+        document.body.addEventListener('htmx:beforeRequest', function(event) {
+            if (event.detail.target && event.detail.target.id === 'v-result') {
+                if (loadingIndicator) {
+                    loadingIndicator.style.display = 'block';
+                }
+            }
+        });
+        
+        document.body.addEventListener('htmx:afterRequest', function(event) {
+            if (event.detail.target && event.detail.target.id === 'v-result') {
+                if (loadingIndicator) {
+                    loadingIndicator.style.display = 'none';
+                }
+            }
+        });
+    });
+    """)
+
+    form = Form(
+        Label("Carregar Vídeo:", fr="vf"), 
+        Input(type="file", id="vf", name="video_file", accept="video/*", required=True),
+        Button("Converter para MP3", type="submit"), 
+        hx_post="/video-converter/process", 
+        hx_target="#v-result", 
+        hx_encoding="multipart/form-data",
+        id="video-form"
+    )
+    
+    return page_layout(
+        "Conversor Vídeo->MP3", 
+        Main(
+            A("← Voltar", href="/", cls="back-button", style="background-color: #2196F3 !important; color: white !important; border: none !important;"), 
+            H1("🎵 Conversor Vídeo para MP3"), 
+            P("Selecione um arquivo de vídeo para extrair o áudio em formato MP3."),
+            loader_style,
+            loader_script,
+            form,
+            Div(id="v-result", cls="result-area"),
+            # Loader melhorado
+            Div(
+                Div(cls="loader-spinner"), 
+                "Convertendo vídeo... Por favor, aguarde.",
+                id="video-loading"
+            ),
+            cls="container"
+        )
+    )
 
 @app.route("/video-converter/process", methods=["POST"])
 async def video_converter_process(request: Request):
@@ -1005,12 +1200,147 @@ async def video_converter_process(request: Request):
 
 
 # --- Transcritor de Áudio ---
+
 @app.route("/audio-transcriber", methods=["GET"])
 def audio_transcriber_page():
-    form = Form(Label("Carregar Áudio:", fr="af"), Input(type="file", id="af", name="audio_file", accept="audio/*", required=True),
-        Button("Transcrever", type="submit"), hx_post="/audio-transcriber/process", hx_target="#a-result", hx_encoding="multipart/form-data", hx_indicator="#a-load")
-    return page_layout("Transcritor de Áudio", Main(A("← Voltar", href="/", cls="back-button"), H1("🎤 Transcritor"), P("Selecione áudio."), form,
-        Div(id="a-result", cls_="result-area"), P(id="a-load", cls_="htmx-indicator", style="display:none;", content="Transcrevendo..."), cls="container"))
+    # Estilo para o loader
+    loader_style = Style("""
+        #audio-loading {
+            display: none;
+            margin-top: 1rem;
+            padding: 1rem;
+            background-color: #e9f5ff;
+            border-radius: 5px;
+            text-align: center;
+            border: 1px solid #b8daff;
+        }
+        
+        .loader-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(0, 123, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #007bff;
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 10px;
+            vertical-align: middle;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .transcription-step {
+            color: #0066cc;
+            font-weight: bold;
+        }
+    """)
+    
+    # JavaScript para gerenciar o loader
+    loader_script = Script("""
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('audio-form');
+        const loadingIndicator = document.getElementById('audio-loading');
+        const resultArea = document.getElementById('a-result');
+        let processingStarted = false;
+        let processingStepTimer;
+        const processingSteps = [
+            "Carregando arquivo de áudio...",
+            "Preparando para transcrição...",
+            "Processando áudio com Whisper...",
+            "Transcrevendo áudio <span class='transcription-step'>(Etapa 1/2)</span>...",
+            "Refinando transcrição com IA <span class='transcription-step'>(Etapa 2/2)</span>..."
+        ];
+        let currentStep = 0;
+        
+        function updateProcessingMessage() {
+            const messageElement = document.getElementById('processing-message');
+            if (messageElement && processingStarted) {
+                messageElement.innerHTML = processingSteps[currentStep];
+                currentStep = (currentStep + 1) % processingSteps.length;
+            }
+        }
+        
+        if (form) {
+            form.addEventListener('submit', function() {
+                if (loadingIndicator) {
+                    loadingIndicator.style.display = 'block';
+                    processingStarted = true;
+                    currentStep = 0;
+                    updateProcessingMessage();
+                    processingStepTimer = setInterval(updateProcessingMessage, 5000); // Atualizar a cada 5 segundos
+                }
+                if (resultArea) {
+                    resultArea.innerHTML = '';
+                }
+            });
+        }
+        
+        // Eventos HTMX para mostrar/esconder o loader
+        document.body.addEventListener('htmx:beforeRequest', function(event) {
+            if (event.detail.target && event.detail.target.id === 'a-result') {
+                if (loadingIndicator) {
+                    loadingIndicator.style.display = 'block';
+                    processingStarted = true;
+                    currentStep = 0;
+                    updateProcessingMessage();
+                    processingStepTimer = setInterval(updateProcessingMessage, 5000);
+                }
+            }
+        });
+        
+        document.body.addEventListener('htmx:afterRequest', function(event) {
+            if (loadingIndicator) {
+                loadingIndicator.style.display = 'none';
+                processingStarted = false;
+                clearInterval(processingStepTimer);
+            }
+        });
+    });
+    """)
+
+    # Verificar status do modelo Whisper
+    whisper_status = P("✅ Modelo de transcrição Whisper está pronto.", style="color: green; font-weight: bold;")
+    if whisper_model is None:
+        whisper_status = P("⚠️ O modelo Whisper não foi carregado. A transcrição pode não funcionar corretamente.", 
+                          style="color: #856404; background-color: #fff3cd; padding: 10px; border-radius: 5px; border: 1px solid #ffeeba;")
+
+    form = Form(
+        Label("Carregar Arquivo de Áudio:", fr="af"), 
+        Input(type="file", id="af", name="audio_file", accept="audio/*", required=True),
+        P("Os formatos suportados incluem MP3, WAV, M4A, OGG, etc.", style="font-size: 0.85rem; color: #666; margin-top: 0.25rem;"),
+        Button("Transcrever Áudio", type="submit"), 
+        hx_post="/audio-transcriber/process", 
+        hx_target="#a-result", 
+        hx_encoding="multipart/form-data",
+        id="audio-form"
+    )
+    
+    return page_layout(
+        "Transcritor de Áudio", 
+        Main(
+            A("← Voltar", href="/", cls="back-button", style="background-color: #2196F3 !important; color: white !important; border: none !important;"), 
+            H1("🎤 Transcritor de Áudio"), 
+            P("Carregue um arquivo de áudio para transcrevê-lo automaticamente. A transcrição pode levar alguns minutos dependendo do tamanho do arquivo."),
+            whisper_status,
+            loader_style,
+            loader_script,
+            form,
+            Div(id="a-result", cls="result-area"),
+            # Loader melhorado
+            Div(
+                Div(cls="loader-spinner"), 
+                Span("Carregando arquivo de áudio...", id="processing-message"),
+                P("Transcrições de áudio podem levar alguns minutos. Por favor, aguarde.", style="font-size: 0.85rem; margin-top: 0.5rem;"),
+                id="audio-loading"
+            ),
+            cls="container"
+        )
+    )
+
+
+
 
 @app.route("/audio-transcriber/process", methods=["POST"])
 async def audio_transcriber_process(request: Request):
@@ -1065,214 +1395,207 @@ async def audio_transcriber_process(request: Request):
 
 
 # --- Consulta RDPM ---
-# @app.route("/rdpm-query", methods=["GET"])
-# def rdpm_query_page():
-#     chat_history_init = Div(Div("Olá! Pergunte sobre o RDPM.", cls="chat-message assistant"), id="chat-history", style="height:450px; overflow-y:auto; border:1px solid #eee; padding:1rem; margin-bottom:1rem; background:white; border-radius:5px;")
-#     form = Form(Input(type="text", name="question", placeholder="Sua pergunta...", required=True, autocomplete="off", style="flex-grow:1;"), Button("Enviar", type="submit"),
-#         style="display:flex; gap:0.5rem; margin-top:1rem;", hx_post="/rdpm-query/ask", hx_target="#chat-history", hx_swap="beforeend", hx_indicator="#rdpm-load", **{"_=":"on htmx:afterRequest reset() me"})
-#     status = Div("⚠️ Agente RDPM não inicializado.", cls="error-message", style="margin-bottom:1rem;") if not rdpm_agent_initialized else Div()
-#     return page_layout("Consulta RDPM", Main(A("← Voltar", href="/", cls="back-button"), H1("⚖️ Consulta RDPM"), status, chat_history_init, form,
-#         P(id="rdpm-load", cls_="htmx-indicator", style="display:none;", content="Pensando..."), cls="container"))
+
 @app.route("/rdpm-query", methods=["GET"])
 def rdpm_query_page():
     # Estilo CSS para o chat incluindo os novos estilos para o contexto
     chat_style = Style("""
-        .chat-container {
-    height: 450px;
-    overflow-y: auto;
-    border: 1px solid #e0e0e0;
-    padding: 1rem;
-    margin-bottom: 1rem;
-    background: white;
-    border-radius: 8px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-}
+            .chat-container {
+        height: 450px;
+        overflow-y: auto;
+        border: 1px solid #e0e0e0;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
 
-.chat-message {
-    margin: 0.8rem 0;
-    padding: 0.8rem;
-    border-radius: 8px;
-    position: relative;
-    max-width: 85%;
-    line-height: 1.5;
-}
+    .chat-message {
+        margin: 0.8rem 0;
+        padding: 0.8rem;
+        border-radius: 8px;
+        position: relative;
+        max-width: 85%;
+        line-height: 1.5;
+    }
 
-.user {
-    background-color: #e3f2fd;
-    color: #0d47a1;
-    margin-left: auto;
-    text-align: right;
-    padding-left: 2.8rem; /* Mais espaço para o ícone */
-}
+    .user {
+        background-color: #e3f2fd;
+        color: #0d47a1;
+        margin-left: auto;
+        text-align: right;
+        padding-left: 2.8rem; /* Mais espaço para o ícone */
+    }
 
-.assistant {
-    background-color: #f5f5f5;
-    color: #333;
-    margin-right: auto;
-    padding-left: 2.8rem; /* Mais espaço para o ícone */
-}
+    .assistant {
+        background-color: #f5f5f5;
+        color: #333;
+        margin-right: auto;
+        padding-left: 2.8rem; /* Mais espaço para o ícone */
+    }
 
-.chat-icon {
-    position: absolute;
-    left: 0.7rem; /* Ajustado para dar mais espaço */
-    top: 50%;
-    transform: translateY(-50%);
-    width: 1.8rem;
-    height: 1.8rem;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.1rem;
-    /* Removida a cor de fundo */
-}
+    .chat-icon {
+        position: absolute;
+        left: 0.7rem; /* Ajustado para dar mais espaço */
+        top: 50%;
+        transform: translateY(-50%);
+        width: 1.8rem;
+        height: 1.8rem;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.1rem;
+        /* Removida a cor de fundo */
+    }
 
-.thinking {
-    padding: 0.8rem;
-    border-radius: 8px;
-    background-color: #f9f9f9;
-    color: #757575;
-    display: flex;
-    align-items: center;
-    margin-right: auto;
-    max-width: 85%;
-    position: relative;
-    padding-left: 2.8rem; /* Consistente com outras mensagens */
-    margin: 0.8rem 0;
-}
+    .thinking {
+        padding: 0.8rem;
+        border-radius: 8px;
+        background-color: #f9f9f9;
+        color: #757575;
+        display: flex;
+        align-items: center;
+        margin-right: auto;
+        max-width: 85%;
+        position: relative;
+        padding-left: 2.8rem; /* Consistente com outras mensagens */
+        margin: 0.8rem 0;
+    }
 
-.dot-animation {
-    display: inline-block;
-}
+    .dot-animation {
+        display: inline-block;
+    }
 
-.dot {
-    display: inline-block;
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background-color: #757575;
-    margin: 0 2px;
-    animation: bounce 1.5s infinite ease-in-out;
-}
+    .dot {
+        display: inline-block;
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background-color: #757575;
+        margin: 0 2px;
+        animation: bounce 1.5s infinite ease-in-out;
+    }
 
-.dot:nth-child(1) { animation-delay: 0s; }
-.dot:nth-child(2) { animation-delay: 0.2s; }
-.dot:nth-child(3) { animation-delay: 0.4s; }
+    .dot:nth-child(1) { animation-delay: 0s; }
+    .dot:nth-child(2) { animation-delay: 0.2s; }
+    .dot:nth-child(3) { animation-delay: 0.4s; }
 
-@keyframes bounce {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-6px); }
-}
+    @keyframes bounce {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-6px); }
+    }
 
-.chat-input-container {
-    display: flex;
-    gap: 0.5rem;
-    margin-top: 1rem;
-}
+    .chat-input-container {
+        display: flex;
+        gap: 0.5rem;
+        margin-top: 1rem;
+    }
 
-.chat-input {
-    flex-grow: 1;
-    padding: 0.7rem;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    font-size: 1rem;
-    height: 40px; /* Altura específica para o input */
-    box-sizing: border-box; /* Garante que padding não aumente o tamanho */
-}
+    .chat-input {
+        flex-grow: 1;
+        padding: 0.7rem;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        font-size: 1rem;
+        height: 40px; /* Altura específica para o input */
+        box-sizing: border-box; /* Garante que padding não aumente o tamanho */
+    }
 
-.send-button {
-    background-color: #2196F3;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    padding: 0 1.2rem;
-    font-size: 1rem;
-    cursor: pointer;
-    transition: background-color 0.2s;
-    height: 40px; /* Mesma altura do input */
-    line-height: 40px; /* Centraliza o texto verticalmente */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
+    .send-button {
+        background-color: #2196F3;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        padding: 0 1.2rem;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: background-color 0.2s;
+        height: 40px; /* Mesma altura do input */
+        line-height: 40px; /* Centraliza o texto verticalmente */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
 
-.send-button:hover {
-    background-color: #0b7dda;
-}
+    .send-button:hover {
+        background-color: #0b7dda;
+    }
 
-.error-message {
-    background-color: #ffebee;
-    color: #c62828;
-    padding: 0.5rem;
-    border-radius: 4px;
-    margin-bottom: 1rem;
-}
+    .error-message {
+        background-color: #ffebee;
+        color: #c62828;
+        padding: 0.5rem;
+        border-radius: 4px;
+        margin-bottom: 1rem;
+    }
 
-/* Estilo para o botão voltar */
-.back-button {
-    background-color: #2196F3 !important; /* Azul para o botão voltar */
-    color: white !important;
-    border: none !important;
-    border-radius: 4px;
-    padding: 0.5rem 1rem;
-    text-decoration: none;
-    font-size: 0.9rem;
-    transition: background-color 0.2s;
-    display: inline-block;
-    margin-bottom: 1.5rem;
-}
+    /* Estilo para o botão voltar */
+    .back-button {
+        background-color: #2196F3 !important; /* Azul para o botão voltar */
+        color: white !important;
+        border: none !important;
+        border-radius: 4px;
+        padding: 0.5rem 1rem;
+        text-decoration: none;
+        font-size: 0.9rem;
+        transition: background-color 0.2s;
+        display: inline-block;
+        margin-bottom: 1.5rem;
+    }
 
-.back-button:hover {
-    background-color: #0b7dda !important;
-    box-shadow: 0 3px 5px rgba(0,0,0,0.1);
-}
+    .back-button:hover {
+        background-color: #0b7dda !important;
+        box-shadow: 0 3px 5px rgba(0,0,0,0.1);
+    }
 
-/* Estilos para o expander e contexto */
-.context-expander {
-    margin-top: 0.5rem;
-    font-size: 0.85rem;
-    color: #666;
-    cursor: pointer;
-    user-select: none;
-}
+    /* Estilos para o expander e contexto */
+    .context-expander {
+        margin-top: 0.5rem;
+        font-size: 0.85rem;
+        color: #666;
+        cursor: pointer;
+        user-select: none;
+    }
 
-.context-expander:hover {
-    color: #2196F3;
-}
+    .context-expander:hover {
+        color: #2196F3;
+    }
 
-.context-content {
-    display: none;
-    margin-top: 0.5rem;
-    padding: 0.8rem;
-    background-color: #f9f9f9;
-    border-radius: 4px;
-    border-left: 3px solid #ccc;
-}
+    .context-content {
+        display: none;
+        margin-top: 0.5rem;
+        padding: 0.8rem;
+        background-color: #f9f9f9;
+        border-radius: 4px;
+        border-left: 3px solid #ccc;
+    }
 
-.context-item {
-    margin-bottom: 0.8rem;
-    padding-bottom: 0.8rem;
-    border-bottom: 1px solid #eee;
-}
+    .context-item {
+        margin-bottom: 0.8rem;
+        padding-bottom: 0.8rem;
+        border-bottom: 1px solid #eee;
+    }
 
-.context-item:last-child {
-    margin-bottom: 0;
-    padding-bottom: 0;
-    border-bottom: none;
-}
+    .context-item:last-child {
+        margin-bottom: 0;
+        padding-bottom: 0;
+        border-bottom: none;
+    }
 
-.context-page {
-    font-weight: bold;
-    margin-bottom: 0.3rem;
-    color: #555;
-}
+    .context-page {
+        font-weight: bold;
+        margin-bottom: 0.3rem;
+        color: #555;
+    }
 
-.context-text {
-    font-style: italic;
-    color: #666;
-    line-height: 1.4;
-}
-    """)
+    .context-text {
+        font-style: italic;
+        color: #666;
+        line-height: 1.4;
+    }
+        """)
     
     # JavaScript para o chat
     chat_script = Script("""
@@ -1476,7 +1799,7 @@ def rdpm_query_page():
     return page_layout(
         "Consulta RDPM",
         Main(
-            A("← Voltar", href="/", cls="back-button"),
+            A("← Voltar", href="/", cls="back-button", style="background-color: #2196F3 !important; color: white !important; border: none !important;"),
             H1("⚖️ Consulta ao RDPM"),
             P("Tire suas dúvidas sobre o Regulamento Disciplinar da Polícia Militar."),
             status,
@@ -2156,7 +2479,7 @@ async def prescription_calculator_page(request: Request):
     return page_layout(
         "Calculadora de Prescrição",
         Main(
-            A("← Voltar", href="/", cls="back-button"),
+            A("← Voltar", href="/", cls="back-button", style="background-color: #2196F3 !important; color: white !important; border: none !important;"),
             H1("⏳ Calculadora de Prescrição Disciplinar"),
             P("Calcule a data limite para a prescrição de infrações disciplinares conforme as regras do RDPM."),
             calc_style,

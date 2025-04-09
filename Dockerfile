@@ -30,10 +30,12 @@ RUN mkdir -p /app/static /app/modules /app/files /app/letsencrypt
 
 # Copiar requirements e instalar dependências Python
 COPY requirements.txt .
-# Usar cache do pip se disponível no build
-RUN --mount=type=cache,target=/root/.cache/pip \
-    pip install --no-cache-dir --upgrade pip && \
-    pip install --no-cache-dir -r requirements.txt
+
+# Instalar wheel e setuptools antes das dependências principais
+RUN pip install --no-cache-dir --upgrade pip wheel setuptools
+
+# Instalar as dependências do projeto
+RUN pip install --no-cache-dir -r requirements.txt
 
 # Copiar o restante da aplicação
 COPY . .

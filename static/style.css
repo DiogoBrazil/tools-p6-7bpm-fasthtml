@@ -207,19 +207,25 @@ footer {
     color: #777;
 }
 
-/* Botão Voltar (Exemplo) */
+/* Estilo para o botão voltar (uniforme azul para todas as páginas) */
 .back-button {
-    display: inline-block;
-    margin-bottom: 1.5rem;
-    padding: 0.5rem 1rem;
-    background-color: #f0f2f6;
-    color: #333;
-    border: 1px solid #d1d1d1;
+    background-color: #2196F3 !important; /* Azul para todos os botões voltar */
+    color: white !important;
+    border: none !important;
     border-radius: 4px;
+    padding: 0.5rem 1rem;
     text-decoration: none;
     font-size: 0.9rem;
-    transition: background-color 0.2s ease;
+    transition: background-color 0.2s, transform 0.2s;
+    display: inline-block;
+    margin-bottom: 1.5rem;
 }
+
 .back-button:hover {
-    background-color: #e0e2e6;
+    background-color: #0b7dda !important;
+    box-shadow: 0 3px 5px rgba(0,0,0,0.1);
+    transform: translateY(-2px);
 }
+
+/* Adicionar isso no arquivo style.css */
+
