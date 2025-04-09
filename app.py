@@ -214,6 +214,7 @@ def tool_card(id:str, icon: str, title: str, description: str, items: list[str],
     )
 
 # --- Rota Principal (Home) ---
+
 @app.route("/", methods=["GET"])
 def home():
     cards = [
@@ -1301,7 +1302,7 @@ def audio_transcriber_page():
     """)
 
     # Verificar status do modelo Whisper
-    whisper_status = P("✅ Modelo de transcrição Whisper está pronto.", style="color: green; font-weight: bold;")
+    whisper_status = P("✅ Modelo de transcrição está pronto.", style="color: green; font-weight: bold;")
     if whisper_model is None:
         whisper_status = P("⚠️ O modelo Whisper não foi carregado. A transcrição pode não funcionar corretamente.", 
                           style="color: #856404; background-color: #fff3cd; padding: 10px; border-radius: 5px; border: 1px solid #ffeeba;")

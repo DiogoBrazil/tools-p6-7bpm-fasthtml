@@ -13,11 +13,10 @@ body {
 }
 
 .wide-container {
-    max-width: 100%;
+    max-width: 1200px; /* Limitar largura para evitar excesso de cards */
     margin: 1rem auto;
     padding: 1rem 1.5rem;
 }
-
 
 header {
     text-align: center;
@@ -37,21 +36,34 @@ header p {
     line-height: 1.6;
 }
 
-/* Layout de Cards (Exemplo Flexbox) */
+/* Layout de Cards - Forçando grid de 3 colunas no máximo */
 .card-grid {
-    display: flex;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr); /* Força exatamente 3 colunas */
     gap: 1.5rem; /* Espaço entre cards */
-    justify-content: center;
+    width: 100%;
+    margin: 0 auto;
+}
+
+/* Ajuste para telas médias - 2 colunas */
+@media (max-width: 991px) {
+    .card-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* Ajuste para telas pequenas - 1 coluna */
+@media (max-width: 767px) {
+    .card-grid {
+        grid-template-columns: 1fr;
+    }
 }
 
 .tool-card {
     background-color: #ffffff;
     border-radius: 8px;
-    padding: 1.5rem; /* Aumentar padding interno */
-    flex: 1 1 300px; /* Flex-grow, flex-shrink, base width */
-    max-width: 400px; /* Largura máxima do card */
-    min-height: 280px; /* Altura mínima similar */
+    padding: 1.5rem;
+    min-height: 280px;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -197,7 +209,6 @@ button[type="submit"]:hover {
     border-radius: 5px;
 }
 
-
 footer {
     margin-top: 3rem;
     padding-top: 1.5rem;
@@ -227,5 +238,29 @@ footer {
     transform: translateY(-2px);
 }
 
-/* Adicionar isso no arquivo style.css */
+/* Loaders para processamento */
+.loader-spinner {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid rgba(0, 123, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: #007bff;
+    animation: spin 1s ease-in-out infinite;
+    margin-right: 10px;
+    vertical-align: middle;
+}
 
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.loading-indicator {
+    display: none;
+    margin-top: 1rem;
+    padding: 1rem;
+    background-color: #e9f5ff;
+    border-radius: 5px;
+    text-align: center;
+    border: 1px solid #b8daff;
+}
