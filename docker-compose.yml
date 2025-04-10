@@ -21,3 +21,4 @@ services:
     environment:
       # Variáveis de ambiente adicionais, se necessário
       - PYTHONUNBUFFERED=1 # Garante que logs Python apareçam imediatamente
+      - WEB_CONCURRENCY=4  # Controla número de workers
